@@ -1,5 +1,5 @@
 <layout id="MainLayout">
     <label id="hrLabel" text="0" x="center" y="120" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" font="Gfx.FONT_SYSTEM_NUMBER_THAI_HOT" />
-	<bitmap id="hrIcon" filename="../drawables/heart.png" x="center" y="15" />
-    <label id="hrLegend" text="BPM" x="center" y="190" justification="Gfx.TEXT_JUSTIFY_CENTER" />
+	<bitmap id="hrIcon" filename="../drawables/heart.png" x="center" y="25" />
+    <label id="hrLegend" text="BPM" x="center" y="180" justification="Gfx.TEXT_JUSTIFY_CENTER" />
 </layout>
