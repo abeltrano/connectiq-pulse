@@ -40,7 +40,9 @@ class reflectHrView extends Ui.View {
 	var hrLabelMhrValue;
 	
 	var hrValue = [0,0];
-	var hrTimerInterval = MinHrIntervalMs;
+	var hrTimerInterval = [MinHrIntervalMs, MinHrIntervalMs];
+	var hrValueUpdated  = false;
+	var hrValueUpdateTime = 0;
 	var hrTimer = new Timer.Timer();
 	var scTimer = new Timer.Timer();
 	
@@ -72,6 +74,8 @@ class reflectHrView extends Ui.View {
     function onShow() {
         self.hrTimer.start(method(:onHrTimerExpired), MinHrIntervalMs, true);
         self.hrLabel.setText("--");
+        self.hrLabelMhrValue.setText("--");
+        self.hrLabelZoneValue.setText("--");
     }
 
     // Update the view
@@ -110,6 +114,12 @@ class reflectHrView extends Ui.View {
     }
     
     function drawHrZoneArcs(dc) {
+    	// Don't draw any zones if no value is set.
+    	var hr = self.hrValue[Current];
+    	if (hr == null || hr == 0) {
+    		return;
+    	}
+    	
     	var x = dc.getWidth() / 2;
         var y = dc.getHeight() / 2;
         var r = x - 5;
@@ -174,28 +184,36 @@ class reflectHrView extends Ui.View {
 
 		// Check if heart rate changed.
 		if (self.hrValue[Current] != self.hrValue[Last]) {
-			self.hrTimerInterval = OneMinuteInMs / hrValue[Current];
-			if (self.hrTimerInterval <= 0) {
-				self.hrTimerInterval = MinHrIntervalMs;
+			self.hrTimerInterval[Last] = hrTimerInterval[Current];
+			self.hrTimerInterval[Current] = OneMinuteInMs / self.hrValue[Current];
+			if (self.hrTimerInterval[Current] <= 0) {
+				self.hrTimerInterval[Current] = MinHrIntervalMs;
 			}
 			
-			self.hrTimer.stop();
-			self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval, true);
-			self.hrLabel.setText(self.hrValue[Current].format("%d"));
-			// don't need to request update since scTimer will pick this up.
+			self.hrValueUpdated = true;
 		}
     }
     
     function onHrTimerExpired() {
-    	if (self.hrValue[Current] > 0) {
-    		self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_THAI_HOT);
-    		self.scTimer.start(method(:onScTimerExpired), self.hrTimerInterval / 2, false);
-			Ui.requestUpdate();
-		}
+		self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_THAI_HOT);
+		self.scTimer.start(method(:onScTimerExpired), self.hrTimerInterval[Current] / 2, false);
+		Ui.requestUpdate();
     }
     
     function onScTimerExpired() {
     	self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_HOT);
-    	Ui.requestUpdate();
+     	
+    	var now = Sys.getTimer();
+    	
+    	// Only update the hr value if the previous interval has run at least once.
+    	if (self.hrValueUpdated && (now - self.hrValueUpdateTime) > self.hrTimerInterval[Last]) {
+    		self.hrValueUpdated = false;
+			self.hrValueUpdateTime = now;
+			self.hrTimer.stop();
+			self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval[Current], true);
+			self.hrLabel.setText(self.hrValue[Current].format("%d"));
+    	}
+    	
+	   	Ui.requestUpdate();
     }
 }
