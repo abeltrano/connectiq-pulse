@@ -21,8 +21,10 @@ class reflectHrView extends Ui.View {
 	var hrZoneAmount;
 	var hrZoneActive = [0, 0];
 	var hrZoneColors = [0x55AA55, 0xFFFF00, 0xFFAA00, 0xFF5500, 0xAA0055, 0xAA0000];
+	var hrZoneDescriptions = ["Rest", "Recovery", "Endurance", "Aerobic", "Threshold", "Anaerobic" ];
 	var hrLabel;
 	var hrLabelZoneValue;
+	var hrLabelZoneDescription;
 	var hrSport;
 	var hrValue = [0,0];
 	var hrTimerInterval = MinHrIntervalMs;
@@ -49,6 +51,7 @@ class reflectHrView extends Ui.View {
         setLayout(Rez.Layouts.MainLayout(dc));
         self.hrLabel = View.findDrawableById("hrLabel");
         self.hrLabelZoneValue = View.findDrawableById("hrLabelZoneValue");
+        self.hrLabelZoneDescription = View.findDrawableById("hrLabelZoneDescription");
         onUpdate(dc);
     }
 
@@ -143,6 +146,7 @@ class reflectHrView extends Ui.View {
 		self.hrZoneActive[Current] = getHrZoneActive(self.hrValue[Current]);
 		self.hrLabelZoneValue.setColor(self.hrZoneColors[self.hrZoneActive[Current]]);
 		self.hrLabelZoneValue.setText((self.hrZoneActive[Current]+1).toString());
+		self.hrLabelZoneDescription.setText(self.hrZoneDescriptions[self.hrZoneActive[Current]]);
 
 		// Check if heart rate changed.
 		if (self.hrValue[Current] != self.hrValue[Last]) {
