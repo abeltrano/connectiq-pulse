@@ -6,41 +6,50 @@ using Toybox.Graphics;
 using Toybox.UserProfile;
 
 class reflectHrView extends Ui.View {
-
 	// Minimum heart rate interval.
+	const MaxHrZoneCount  = 5;
 	const MinHrIntervalMs = 1000;
 	const OneMinuteInMs   = 1000 * 60;
-	const MaxHrZoneCount  = 5;
-	const Debug 		  = true;
+	
+	// Heart rate zone contants.
+	const HrZoneArcWidth   = 5;	
+    const HrZoneSeparation = 5;
+	const HrZoneStart = 90 - (HrZoneSeparation / 2);
 	
 	enum { Current = 0, Last = 1 }
+	
+	// Heart rate zone fixed information.
+	var hrZoneInfo = [ 
+		{ :color => 0x55AA55, :description => "Rest" },
+		{ :color => 0xFFFF00, :description => "Recovery" },
+		{ :color => 0xFFAA00, :description => "Endurance" },
+		{ :color => 0xFF5500, :description => "Aerobic" },
+		{ :color => 0xAA0055, :description => "Threshold" },
+		{ :color => 0xAA0000, :description => "Anaerobic" }];
 
+	var hrZones; 
+	var hrZoneAmount;
+	var hrZoneActive = [0,0];
 	var hrZoneIndex = 0;
 	var hrZoneIndexCount = MaxHrZoneCount;
-	var hrZones; 	
-	var hrZoneAmount;
-	var hrZoneActive = [0, 0];
-	var hrZoneColors = [0x55AA55, 0xFFFF00, 0xFFAA00, 0xFF5500, 0xAA0055, 0xAA0000];
-	var hrZoneDescriptions = ["Rest", "Recovery", "Endurance", "Aerobic", "Threshold", "Anaerobic" ];
+	
+	var hrSport;
 	var hrLabel;
 	var hrLabelZoneValue;
 	var hrLabelZoneDescription;
-	var hrSport;
+	
 	var hrValue = [0,0];
 	var hrTimerInterval = MinHrIntervalMs;
 	var hrTimer = new Timer.Timer();
 	var scTimer = new Timer.Timer();
 	
-	const HrZoneArcWidth = 5;	
-    const HrZoneSeparation = 5;
-	const HrZoneStart = 90 - (HrZoneSeparation / 2);
-
     function initialize() {
         View.initialize();
         
         self.hrSport = UserProfile.getProfile().getCurrentSport();
         self.hrZones = UserProfile.getHeartRateZones(self.hrSport);
         self.hrZoneAmount = (360 / self.hrZones.size()) - HrZoneSeparation;
+        calculateHrZoneBounds();
 
         Sensor.setEnabledSensors([Sensor.SENSOR_HEARTRATE]);
         Sensor.enableSensorEvents(method(:onSensor));
@@ -90,6 +99,14 @@ class reflectHrView extends Ui.View {
 		};
     }
     
+    function calculateHrZoneBounds() {
+    	for (var zone = 0; zone < self.hrZoneInfo.size(); zone++) {
+    		var zoneBounds = getHrZoneBounds(zone);
+    		self.hrZoneInfo[zone][:arcStart] = zoneBounds[:start];
+    		self.hrZoneInfo[zone][:arcEnd]   = zoneBounds[:end];
+    	}
+    }
+    
     function drawHrZoneArcs(dc) {
     	var x = dc.getWidth() / 2;
         var y = dc.getHeight() / 2;
@@ -99,10 +116,9 @@ class reflectHrView extends Ui.View {
         dc.setPenWidth(HrZoneArcWidth);
         
     	for (var zone = 0; zone <= self.hrZoneActive[Current]; zone++) {
-    		var hrZoneBounds = getHrZoneBounds(zone);
-	        dc.setColor(self.hrZoneColors[zone], Graphics.COLOR_TRANSPARENT);
-	        dc.drawArc(x, y, r, Graphics.ARC_CLOCKWISE, hrZoneBounds[:start], hrZoneBounds[:end]);
-	        // TODO: draw circle with radius 1/2 pen width at start+end of arc to create rounded ends.
+    		//var hrZoneBounds = getHrZoneBounds(zone);
+	        dc.setColor(self.hrZoneInfo[zone][:color], Graphics.COLOR_TRANSPARENT);
+	        dc.drawArc(x, y, r, Graphics.ARC_CLOCKWISE, hrZoneInfo[zone][:arcStart], hrZoneInfo[zone][:arcEnd]);
     	}
     }
 
@@ -129,7 +145,7 @@ class reflectHrView extends Ui.View {
     function onSensor(sensorInfo) {   	
     	// Check if heart rate value is valid.
     	if (sensorInfo.heartRate == null) {
-    		if (!Debug) {
+    		if (!reflectHrRuntime.IsDebugBuild()) {
     			self.hrTimer.stop();
     			self.scTimer.stop();
 				self.hrLabel.setText("--");
@@ -144,9 +160,9 @@ class reflectHrView extends Ui.View {
 		self.hrValue[Current] = sensorInfo.heartRate;
 		self.hrZoneActive[Last] = self.hrZoneActive[Current];
 		self.hrZoneActive[Current] = getHrZoneActive(self.hrValue[Current]);
-		self.hrLabelZoneValue.setColor(self.hrZoneColors[self.hrZoneActive[Current]]);
+		self.hrLabelZoneValue.setColor(self.hrZoneInfo[self.hrZoneActive[Current]][:color]);
 		self.hrLabelZoneValue.setText((self.hrZoneActive[Current]+1).toString());
-		self.hrLabelZoneDescription.setText(self.hrZoneDescriptions[self.hrZoneActive[Current]]);
+		self.hrLabelZoneDescription.setText(self.hrZoneInfo[self.hrZoneActive[Current]][:description]);
 
 		// Check if heart rate changed.
 		if (self.hrValue[Current] != self.hrValue[Last]) {
