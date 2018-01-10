@@ -21,7 +21,6 @@ class reflectHrView extends Ui.View {
     function initialize() {
         View.initialize();
 
-        Math.srand(Sys.getTimer());
         Sensor.setEnabledSensors([Sensor.SENSOR_HEARTRATE]);
         Sensor.enableSensorEvents(method(:onSensor));
     }
