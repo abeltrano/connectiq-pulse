@@ -37,6 +37,7 @@ class reflectHrView extends Ui.View {
 	var hrLabel;
 	var hrLabelZoneValue;
 	var hrLabelZoneDescription;
+	var hrLabelMhrValue;
 	
 	var hrValue = [0,0];
 	var hrTimerInterval = MinHrIntervalMs;
@@ -59,6 +60,7 @@ class reflectHrView extends Ui.View {
     function onLayout(dc) {
         setLayout(Rez.Layouts.MainLayout(dc));
         self.hrLabel = View.findDrawableById("hrLabel");
+        self.hrLabelMhrValue = View.findDrawableById("hrLabelMhrValue");
         self.hrLabelZoneValue = View.findDrawableById("hrLabelZoneValue");
         self.hrLabelZoneDescription = View.findDrawableById("hrLabelZoneDescription");
         onUpdate(dc);
@@ -112,11 +114,9 @@ class reflectHrView extends Ui.View {
         var y = dc.getHeight() / 2;
         var r = x - 5;
 
-		dc.clear();
         dc.setPenWidth(HrZoneArcWidth);
         
     	for (var zone = 0; zone <= self.hrZoneActive[Current]; zone++) {
-    		//var hrZoneBounds = getHrZoneBounds(zone);
 	        dc.setColor(self.hrZoneInfo[zone][:color], Graphics.COLOR_TRANSPARENT);
 	        dc.drawArc(x, y, r, Graphics.ARC_CLOCKWISE, hrZoneInfo[zone][:arcStart], hrZoneInfo[zone][:arcEnd]);
     	}
@@ -139,7 +139,7 @@ class reflectHrView extends Ui.View {
 			self.hrZoneIndex = Math.rand() % self.hrZones.size();
 		}
 		
-		return self.hrZones[self.hrZoneIndex]-1;
+		return self.hrZones[self.hrZoneIndex];
     }
     
     function onSensor(sensorInfo) {   	
@@ -160,9 +160,17 @@ class reflectHrView extends Ui.View {
 		self.hrValue[Current] = sensorInfo.heartRate;
 		self.hrZoneActive[Last] = self.hrZoneActive[Current];
 		self.hrZoneActive[Current] = getHrZoneActive(self.hrValue[Current]);
-		self.hrLabelZoneValue.setColor(self.hrZoneInfo[self.hrZoneActive[Current]][:color]);
-		self.hrLabelZoneValue.setText((self.hrZoneActive[Current]+1).toString());
-		self.hrLabelZoneDescription.setText(self.hrZoneInfo[self.hrZoneActive[Current]][:description]);
+		
+		var zoneActive = self.hrZoneActive[Current];
+		var zoneColor  = self.hrZoneInfo[zoneActive][:color];
+		var zoneDescription = self.hrZoneInfo[zoneActive][:description];
+		var zoneMhr = self.hrValue[Current] * 100 / self.hrZones[self.hrZones.size()-1];
+		
+		self.hrLabelZoneValue.setColor(zoneColor);
+		self.hrLabelZoneValue.setText(zoneActive.toString());
+		self.hrLabelMhrValue.setColor(zoneColor);
+		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
+		self.hrLabelZoneDescription.setText(zoneDescription);
 
 		// Check if heart rate changed.
 		if (self.hrValue[Current] != self.hrValue[Last]) {
