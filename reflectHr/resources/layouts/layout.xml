@@ -1,13 +1,9 @@
 <layout id="MainLayout">
-    <label id="hrLabel" text="0" x="center" y="120" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" font="Gfx.FONT_SYSTEM_NUMBER_THAI_HOT" />
 	<bitmap id="hrIcon" filename="../drawables/heart.png" x="center" y="25" />
-    <!--<label id="hrLegend" text="BPM" x="200" y="120" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" />-->
-    
+    <label id="hrLabel" text="0" x="center" y="120" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" font="Gfx.FONT_SYSTEM_NUMBER_THAI_HOT" />   
     <label id="hrLabelMhrText" text="MHR" x="200" y="110" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" />
     <label id="hrLabelMhrValue" x="200" y="135" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" />
-    
     <label id="hrLabelZoneText" text="Zone" x="40" y="110" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" />
     <label id="hrLabelZoneValue" x="40" y="135" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" />
-    
-    <label id="hrLabelZoneDescription" x="center" y="180" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" color="Gfx.COLOR_DK_GRAY" />
+    <label id="hrLabelZoneDescription" x="center" y="190" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" color="Gfx.COLOR_DK_GRAY" />
 </layout>

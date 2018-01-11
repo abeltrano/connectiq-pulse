@@ -29,10 +29,11 @@ class reflectHrView extends Ui.View {
 
 	var hrZones; 
 	var hrZoneAmount;
-	var hrZoneActive = [0,0];
+	var hrZoneActive = 0;
 	var hrZoneIndex = 0;
 	var hrZoneIndexCount = MaxHrZoneCount;
 	
+	var hrMax;
 	var hrSport;
 	var hrLabel;
 	var hrLabelZoneValue;
@@ -40,8 +41,7 @@ class reflectHrView extends Ui.View {
 	var hrLabelMhrValue;
 	
 	var hrValue = [0,0];
-	var hrTimerInterval = [MinHrIntervalMs, MinHrIntervalMs];
-	var hrValueUpdated  = false;
+	var hrTimerInterval = MinHrIntervalMs;
 	var hrValueUpdateTime = 0;
 	var hrTimer = new Timer.Timer();
 	var scTimer = new Timer.Timer();
@@ -52,13 +52,14 @@ class reflectHrView extends Ui.View {
         self.hrSport = UserProfile.getProfile().getCurrentSport();
         self.hrZones = UserProfile.getHeartRateZones(self.hrSport);
         self.hrZoneAmount = (360 / self.hrZones.size()) - HrZoneSeparation;
+        self.hrMax = self.hrZones[self.hrZones.size()-1];
+        
         calculateHrZoneBounds();
 
         Sensor.setEnabledSensors([Sensor.SENSOR_HEARTRATE]);
         Sensor.enableSensorEvents(method(:onSensor));
     }
 
-    // Load your resources here
     function onLayout(dc) {
         setLayout(Rez.Layouts.MainLayout(dc));
         self.hrLabel = View.findDrawableById("hrLabel");
@@ -68,19 +69,19 @@ class reflectHrView extends Ui.View {
         onUpdate(dc);
     }
 
-    // Called when this View is brought to the foreground. Restore
-    // the state of this View and prepare it to be shown. This includes
-    // loading resources into memory.
     function onShow() {
-        self.hrTimer.start(method(:onHrTimerExpired), MinHrIntervalMs, true);
+        updateHrDefaults();
+    }
+    
+    function updateHrDefaults() {
         self.hrLabel.setText("--");
         self.hrLabelMhrValue.setText("--");
         self.hrLabelZoneValue.setText("--");
+        self.hrLabelZoneDescription.setText("Waiting");
+	   	Ui.requestUpdate();
     }
 
-    // Update the view
     function onUpdate(dc) {      
-        // Call the parent onUpdate function to redraw the layout
     	View.onUpdate(dc);
         drawHrZoneArcs(dc);
     }
@@ -99,10 +100,7 @@ class reflectHrView extends Ui.View {
     	var zoneStart = HrZoneStart - (zone * (self.hrZoneAmount + HrZoneSeparation));
     	var zoneEnd   = zoneStart - self.hrZoneAmount;
     	
-    	return { 
-    		:start => zoneStart,
-    		:end   => zoneEnd
-		};
+    	return { :start => zoneStart, :end => zoneEnd };
     }
     
     function calculateHrZoneBounds() {
@@ -126,15 +124,12 @@ class reflectHrView extends Ui.View {
 
         dc.setPenWidth(HrZoneArcWidth);
         
-    	for (var zone = 0; zone <= self.hrZoneActive[Current]; zone++) {
+    	for (var zone = 0; zone <= self.hrZoneActive; zone++) {
 	        dc.setColor(self.hrZoneInfo[zone][:color], Graphics.COLOR_TRANSPARENT);
 	        dc.drawArc(x, y, r, Graphics.ARC_CLOCKWISE, hrZoneInfo[zone][:arcStart], hrZoneInfo[zone][:arcEnd]);
     	}
     }
 
-    // Called when this View is removed from the screen. Save the
-    // state of this View here. This includes freeing resources from
-    // memory.
     function onHide() {
     	self.hrTimer.stop();
     	self.scTimer.stop();
@@ -158,62 +153,71 @@ class reflectHrView extends Ui.View {
     		if (!reflectHrRuntime.IsDebugBuild()) {
     			self.hrTimer.stop();
     			self.scTimer.stop();
-				self.hrLabel.setText("--");
+    			updateHrDefaults();
 				return;
     		}
     		
     		sensorInfo.heartRate = getRandomizedHr();
     	}
     	
-    	// Process heart rate value.
-		self.hrValue[Last] = self.hrValue[Current];
-		self.hrValue[Current] = sensorInfo.heartRate;
-		self.hrZoneActive[Last] = self.hrZoneActive[Current];
-		self.hrZoneActive[Current] = getHrZoneActive(self.hrValue[Current]);
-		
-		var zoneActive = self.hrZoneActive[Current];
-		var zoneColor  = self.hrZoneInfo[zoneActive][:color];
-		var zoneDescription = self.hrZoneInfo[zoneActive][:description];
-		var zoneMhr = self.hrValue[Current] * 100 / self.hrZones[self.hrZones.size()-1];
-		
-		self.hrLabelZoneValue.setColor(zoneColor);
-		self.hrLabelZoneValue.setText(zoneActive.toString());
-		self.hrLabelMhrValue.setColor(zoneColor);
-		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
-		self.hrLabelZoneDescription.setText(zoneDescription);
-
 		// Check if heart rate changed.
-		if (self.hrValue[Current] != self.hrValue[Last]) {
-			self.hrTimerInterval[Last] = hrTimerInterval[Current];
-			self.hrTimerInterval[Current] = OneMinuteInMs / self.hrValue[Current];
-			if (self.hrTimerInterval[Current] <= 0) {
-				self.hrTimerInterval[Current] = MinHrIntervalMs;
+		if (self.hrValue[Current] != sensorInfo.heartRate) {
+			self.hrValue[Last] = self.hrValue[Current];
+			self.hrValue[Current] = sensorInfo.heartRate;
+				
+			// If the new rate is 0, stop the timer.
+			if (self.hrValue[Current] <= 0) {
+				self.hrTimer.stop();
+			// If the previous rate was 0, restart the timer.
+			} else if (self.hrValue[Last] <= 0) {
+				updateHr();
+				self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval / 3 * 2 , false);
+			// Otherwise update hr value.
+			} else {
+				var now  = Sys.getTimer();
+				var next = self.hrValueUpdateTime + 1000;
+				if (now > next) {
+					updateHr();
+				} else {
+					scTimer.start(method(:onScTimerExpired), next - now, false);
+				}
 			}
-			
-			self.hrValueUpdated = true;
 		}
     }
     
     function onHrTimerExpired() {
 		self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_THAI_HOT);
-		self.scTimer.start(method(:onScTimerExpired), self.hrTimerInterval[Current] / 2, false);
+		self.hrTimer.start(method(:onHrTimerExpiredShort), self.hrTimerInterval / 3 * 2, false);
 		Ui.requestUpdate();
+	}
+	
+	function onHrTimerExpiredShort() {
+		self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_HOT);
+		self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval / 3 * 1, false);
+		Ui.requestUpdate();
+	}
+	
+    function onScTimerExpired() {
+		updateHr();
     }
     
-    function onScTimerExpired() {
-    	self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_HOT);
-     	
-    	var now = Sys.getTimer();
-    	
-    	// Only update the hr value if the previous interval has run at least once.
-    	if (self.hrValueUpdated && (now - self.hrValueUpdateTime) > self.hrTimerInterval[Last]) {
-    		self.hrValueUpdated = false;
-			self.hrValueUpdateTime = now;
-			self.hrTimer.stop();
-			self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval[Current], true);
-			self.hrLabel.setText(self.hrValue[Current].format("%d"));
-    	}
-    	
+	function updateHr() {
+		var hrValue = self.hrValue[Current];
+		
+		self.hrValueUpdateTime = Sys.getTimer();
+		self.hrTimerInterval = OneMinuteInMs / hrValue;
+		self.hrZoneActive = getHrZoneActive(hrValue);
+
+		var zone = self.hrZoneInfo[self.hrZoneActive];
+		var zoneMhr = hrValue * 100 / self.hrMax;
+		
+		self.hrLabelZoneValue.setColor(zone[:color]);
+		self.hrLabelZoneValue.setText(self.hrZoneActive.toString());
+		self.hrLabelMhrValue.setColor(zone[:color]);
+		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
+		self.hrLabelZoneDescription.setText(zone[:description]);
+		self.hrLabel.setText(hrValue.format("%d"));
+	   	
 	   	Ui.requestUpdate();
-    }
+	}
 }
