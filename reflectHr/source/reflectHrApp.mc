@@ -16,6 +16,6 @@ class reflectHrApp extends App.AppBase {
 
     // Return the initial view of your application here
     function getInitialView() {
-        return [new reflectHrView()];
+        return [new reflectHrView(), new reflectHrDelegate()];
     }
 }

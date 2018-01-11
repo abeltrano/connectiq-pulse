@@ -234,6 +234,5 @@ class reflectHrView extends Ui.View {
 		Attention.backlight(true);
 		Attention.playTone(tone);
 		Attention.vibrate(vibeProfiles);
-		Attention.backlight(false);
 	}
 }
