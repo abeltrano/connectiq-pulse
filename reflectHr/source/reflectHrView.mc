@@ -16,6 +16,7 @@ class reflectHrView extends Ui.View {
 	const HrZoneArcWidth   = 5;	
     const HrZoneSeparation = 5;
 	const HrZoneStart = 90 - (HrZoneSeparation / 2);
+	const HrZoneVibeMs     = 250;
 	
 	enum { Current = 0, Last = 1 }
 	
@@ -227,12 +228,18 @@ class reflectHrView extends Ui.View {
 		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
 		self.hrLabelZoneDescription.setText(zone[:description]);
 		
-		var vibeDutyCycle = (zoneValue+1) * 100 / self.hrZones.size();
-		var vibeProfiles  = [ new Attention.VibeProfile(vibeDutyCycle, 1000) ];
-		var tone = (zoneValue > zoneValueLast) ? Attention.TONE_ALERT_HI : Attention.TONE_ALERT_LO;
+		if (Attention has :backlight) {
+			Attention.backlight(true);
+		}
 		
-		Attention.backlight(true);
-		Attention.playTone(tone);
-		Attention.vibrate(vibeProfiles);
+		if (Attention has :vibrate) {
+			var vibeDutyCycle  = (zoneValue+1) * 100 / self.hrZones.size();
+			var vibeProfileOn  = new Attention.VibeProfile(vibeDutyCycle, self.HrZoneVibeMs);
+			var vibeProfileOff = new Attention.VibeProfile(0, self.HrZoneVibeMs / 2);			
+			Attention.vibrate([vibeProfileOn, vibeProfileOff, vibeProfileOn]);
+		} else if (Attention has :playTone) {
+			var tone = (zoneValue > zoneValueLast) ? Attention.TONE_ALERT_HI : Attention.TONE_ALERT_LO;
+			Attention.playTone(tone);
+		}
 	}
 }
