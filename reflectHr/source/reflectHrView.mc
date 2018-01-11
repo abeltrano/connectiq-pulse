@@ -29,7 +29,7 @@ class reflectHrView extends Ui.View {
 
 	var hrZones; 
 	var hrZoneAmount;
-	var hrZoneActive = 0;
+	var hrZoneActive = -1;
 	var hrZoneIndex = 0;
 	var hrZoneIndexCount = MaxHrZoneCount;
 	
@@ -86,7 +86,7 @@ class reflectHrView extends Ui.View {
         drawHrZoneArcs(dc);
     }
     
-    function getHrZoneActive(hr) {
+    function getHrZone(hr) {
     	for (var zone = 0; zone < self.hrZones.size() - 1; zone++) {
     		if (hr < self.hrZones[zone]) {
     			return zone;
@@ -126,7 +126,7 @@ class reflectHrView extends Ui.View {
         
     	for (var zone = 0; zone <= self.hrZoneActive; zone++) {
 	        dc.setColor(self.hrZoneInfo[zone][:color], Graphics.COLOR_TRANSPARENT);
-	        dc.drawArc(x, y, r, Graphics.ARC_CLOCKWISE, hrZoneInfo[zone][:arcStart], hrZoneInfo[zone][:arcEnd]);
+	        dc.drawArc(x, y, r, Graphics.ARC_CLOCKWISE, self.hrZoneInfo[zone][:arcStart], self.hrZoneInfo[zone][:arcEnd]);
     	}
     }
 
@@ -203,21 +203,28 @@ class reflectHrView extends Ui.View {
     
 	function updateHr() {
 		var hrValue = self.hrValue[Current];
+		var hrZoneActive = getHrZone(hrValue);
 		
 		self.hrValueUpdateTime = Sys.getTimer();
 		self.hrTimerInterval = OneMinuteInMs / hrValue;
-		self.hrZoneActive = getHrZoneActive(hrValue);
-
-		var zone = self.hrZoneInfo[self.hrZoneActive];
-		var zoneMhr = hrValue * 100 / self.hrMax;
+		self.hrLabel.setText(hrValue.format("%d"));
+		
+		if (self.hrZoneActive != hrZoneActive) {
+			self.hrZoneActive = hrZoneActive;
+			onHrZoneActiveChanged(hrZoneActive);
+		}
+			   	
+	   	Ui.requestUpdate();
+	}
+	
+	function onHrZoneActiveChanged(zoneValue) {
+		var zone = self.hrZoneInfo[zoneValue];
+		var zoneMhr = self.hrValue[Current] * 100 / self.hrMax;
 		
 		self.hrLabelZoneValue.setColor(zone[:color]);
-		self.hrLabelZoneValue.setText(self.hrZoneActive.toString());
+		self.hrLabelZoneValue.setText(zoneValue.toString());
 		self.hrLabelMhrValue.setColor(zone[:color]);
 		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
 		self.hrLabelZoneDescription.setText(zone[:description]);
-		self.hrLabel.setText(hrValue.format("%d"));
-	   	
-	   	Ui.requestUpdate();
 	}
 }
