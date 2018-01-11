@@ -1,5 +1,6 @@
 using Toybox.WatchUi as Ui;
 using Toybox.System as Sys;
+using Toybox.Attention;
 using Toybox.Timer;
 using Toybox.Math;
 using Toybox.Graphics;
@@ -81,7 +82,7 @@ class reflectHrView extends Ui.View {
 	   	Ui.requestUpdate();
     }
 
-    function onUpdate(dc) {      
+    function onUpdate(dc) {
     	View.onUpdate(dc);
         drawHrZoneArcs(dc);
     }
@@ -114,7 +115,7 @@ class reflectHrView extends Ui.View {
     function drawHrZoneArcs(dc) {
     	// Don't draw any zones if no value is set.
     	var hr = self.hrValue[Current];
-    	if (hr == null || hr == 0) {
+    	if (hr == null || hr <= 0) {
     		return;
     	}
     	
@@ -150,14 +151,9 @@ class reflectHrView extends Ui.View {
     function onSensor(sensorInfo) {   	
     	// Check if heart rate value is valid.
     	if (sensorInfo.heartRate == null) {
-    		if (!reflectHrRuntime.IsDebugBuild()) {
-    			self.hrTimer.stop();
-    			self.scTimer.stop();
-    			updateHrDefaults();
-				return;
-    		}
-    		
-    		sensorInfo.heartRate = getRandomizedHr();
+    		sensorInfo.heartRate = reflectHrRuntime.IsDebugBuild()
+    			? getRandomizedHr()
+    			: 0;
     	}
     	
 		// Check if heart rate changed.
@@ -168,6 +164,9 @@ class reflectHrView extends Ui.View {
 			// If the new rate is 0, stop the timer.
 			if (self.hrValue[Current] <= 0) {
 				self.hrTimer.stop();
+				self.scTimer.stop();
+				self.hrZoneActive = -1;
+				updateHrDefaults();
 			// If the previous rate was 0, restart the timer.
 			} else if (self.hrValue[Last] <= 0) {
 				updateHr();
@@ -204,6 +203,7 @@ class reflectHrView extends Ui.View {
 	function updateHr() {
 		var hrValue = self.hrValue[Current];
 		var hrZoneActive = getHrZone(hrValue);
+		var hrZoneActiveLast = self.hrZoneActive;
 		
 		self.hrValueUpdateTime = Sys.getTimer();
 		self.hrTimerInterval = OneMinuteInMs / hrValue;
@@ -211,13 +211,13 @@ class reflectHrView extends Ui.View {
 		
 		if (self.hrZoneActive != hrZoneActive) {
 			self.hrZoneActive = hrZoneActive;
-			onHrZoneActiveChanged(hrZoneActive);
+			onHrZoneActiveChanged(hrZoneActive, hrZoneActiveLast);
 		}
 			   	
 	   	Ui.requestUpdate();
 	}
 	
-	function onHrZoneActiveChanged(zoneValue) {
+	function onHrZoneActiveChanged(zoneValue, zoneValueLast) {
 		var zone = self.hrZoneInfo[zoneValue];
 		var zoneMhr = self.hrValue[Current] * 100 / self.hrMax;
 		
@@ -226,5 +226,14 @@ class reflectHrView extends Ui.View {
 		self.hrLabelMhrValue.setColor(zone[:color]);
 		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
 		self.hrLabelZoneDescription.setText(zone[:description]);
+		
+		var vibeDutyCycle = (zoneValue+1) * 100 / self.hrZones.size();
+		var vibeProfiles  = [ new Attention.VibeProfile(vibeDutyCycle, 1000) ];
+		var tone = (zoneValue > zoneValueLast) ? Attention.TONE_ALERT_HI : Attention.TONE_ALERT_LO;
+		
+		Attention.backlight(true);
+		Attention.playTone(tone);
+		Attention.vibrate(vibeProfiles);
+		Attention.backlight(false);
 	}
 }
