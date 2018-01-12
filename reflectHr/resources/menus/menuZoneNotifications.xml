@@ -1,6 +1,6 @@
-<menu id="menuZoneNotifications" title="Zone Notifications">
-    <menu-item id="zoneNotificationsOff" label="Off" />
-    <menu-item id="zoneNotificationsVibrate" label="Vibrate" />
-    <menu-item id="zoneNotificationsTone" label="Tone" />
-    <menu-item id="zoneNotificationsBoth" label="Both" />
+<menu id="menuZoneNotifications" title="@Strings.zoneNotificationTitle">
+    <menu-item id="zoneNotificationsOff" label="@Strings.zoneNotificationsOff" />
+    <menu-item id="zoneNotificationsVibrate" label="@Strings.zoneNotificationsVibrate" />
+    <menu-item id="zoneNotificationsTone" label="@Strings.zoneNotificationsTone" />
+    <menu-item id="zoneNotificationsBoth" label="@Strings.zoneNotificationsBoth" />
 </menu>

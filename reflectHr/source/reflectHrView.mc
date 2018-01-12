@@ -5,6 +5,14 @@ using Toybox.Timer;
 using Toybox.Math;
 using Toybox.Graphics;
 using Toybox.UserProfile;
+using Toybox.Application;
+
+enum {
+	ZoneNotificationsOff = 0,
+	ZoneNotificationsVibrate = 1,
+	ZoneNotificationsTone = 2,
+	ZoneNotificationsBoth = 3
+}
 
 class reflectHrView extends Ui.View {
 	// Minimum heart rate interval.
@@ -18,16 +26,20 @@ class reflectHrView extends Ui.View {
 	const HrZoneStart = 90 - (HrZoneSeparation / 2);
 	const HrZoneVibeMs     = 250;
 	
-	enum { Current = 0, Last = 1 }
+	enum { 
+		Current = 0, 
+		Last = 1 
+	}
 	
 	// Heart rate zone fixed information.
 	var hrZoneInfo = [ 
-		{ :color => 0x55AA55, :description => "Rest" },
-		{ :color => 0xFFFF00, :description => "Recovery" },
-		{ :color => 0xFFAA00, :description => "Endurance" },
-		{ :color => 0xFF5500, :description => "Aerobic" },
-		{ :color => 0xAA0055, :description => "Threshold" },
-		{ :color => 0xAA0000, :description => "Anaerobic" }];
+		{ :color => 0x55AA55, :description => Rez.Strings.zoneRest },
+		{ :color => 0xFFFF00, :description => Rez.Strings.zoneRecovery },
+		{ :color => 0xFFAA00, :description => Rez.Strings.zoneEndurance },
+		{ :color => 0xFF5500, :description => Rez.Strings.zoneAerobic },
+		{ :color => 0xAA0055, :description => Rez.Strings.zoneThreshold },
+		{ :color => 0xAA0000, :description => Rez.Strings.zoneAnaerobic }
+	];
 
 	var hrZones; 
 	var hrZoneAmount;
@@ -72,15 +84,18 @@ class reflectHrView extends Ui.View {
     }
 
     function onShow() {
-        updateHrDefaults();
+    }
+    
+    function onHide() {
     }
     
     function updateHrDefaults() {
-        self.hrLabel.setText("--");
-        self.hrLabelMhrValue.setText("--");
-        self.hrLabelZoneValue.setText("--");
-        self.hrLabelZoneDescription.setText("Waiting");
-	   	Ui.requestUpdate();
+        self.hrLabel.setText(Rez.Strings.defaultHr);
+        self.hrLabelMhrValue.setText(Rez.Strings.defaultMhr);
+        self.hrLabelZoneValue.setText(Rez.Strings.defaultZoneValue);
+        self.hrLabelZoneDescription.setText(Rez.Strings.defaultZoneDescription);
+        
+   		Ui.requestUpdate();
     }
 
     function onUpdate(dc) {
@@ -132,11 +147,6 @@ class reflectHrView extends Ui.View {
     	}
     }
 
-    function onHide() {
-    	self.hrTimer.stop();
-    	self.scTimer.stop();
-    }
-    
     function getRandomizedHr() {
 		if (self.hrZoneIndexCount > 0) {
 			self.hrZoneIndexCount--;
@@ -152,8 +162,8 @@ class reflectHrView extends Ui.View {
     function onSensor(sensorInfo) {   	
     	// Check if heart rate value is valid.
     	if (sensorInfo.heartRate == null) {
-    		sensorInfo.heartRate = reflectHrRuntime.IsDebugBuild()
-    			? getRandomizedHr()
+    		sensorInfo.heartRate = reflectHrRuntime.IsHrRandomizationEnabled()
+    			? getRandomizedHr() 
     			: 0;
     	}
     	
@@ -228,16 +238,24 @@ class reflectHrView extends Ui.View {
 		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
 		self.hrLabelZoneDescription.setText(zone[:description]);
 		
+		var zoneNotificationSetting = Application.Properties.getValue("zoneNotification");
+		var zoneTone 	= zoneNotificationSetting & ZoneNotificationsTone != 0;
+		var zoneVibrate = zoneNotificationSetting & ZoneNotificationsVibrate != 0;
+		
+		// Always turn on the backlight if available.
 		if (Attention has :backlight) {
 			Attention.backlight(true);
 		}
 		
-		if (Attention has :vibrate) {
+		// Set vibration if enabled and available.
+		if (zoneVibrate && Attention has :vibrate) {
 			var vibeDutyCycle  = (zoneValue+1) * 100 / self.hrZones.size();
 			var vibeProfileOn  = new Attention.VibeProfile(vibeDutyCycle, self.HrZoneVibeMs);
 			var vibeProfileOff = new Attention.VibeProfile(0, self.HrZoneVibeMs / 2);			
 			Attention.vibrate([vibeProfileOn, vibeProfileOff, vibeProfileOn]);
-		} else if (Attention has :playTone) {
+		} 
+		// Set tone if enabled and available.		
+		if (zoneTone && Attention has :playTone) {
 			var tone = (zoneValue > zoneValueLast) ? Attention.TONE_ALERT_HI : Attention.TONE_ALERT_LO;
 			Attention.playTone(tone);
 		}

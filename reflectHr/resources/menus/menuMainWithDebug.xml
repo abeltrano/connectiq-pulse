@@ -1,0 +1,4 @@
+<menu id="menuMainWithDebug" title="@Strings.menuMainTitle">
+    <menu-item id="menuItemZoneNotifications" label="@Strings.zoneNotificationTitle" />
+    <menu-item id="menuItemDebug" label="@Strings.menuDebugTitle" />
+</menu>

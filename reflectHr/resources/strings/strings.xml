@@ -1,3 +1,32 @@
 <strings>
     <string id="AppName">ReflectHR</string>
+    
+    <!--  Main menu -->
+    <string id="menuMainTitle">Options</string>
+    <string id="menuDebugTitle">Debugging</string>
+    <string id="zoneNotificationTitle">Zone Notifications</string>
+        
+    <!--  Debugging menu -->
+    <string id="debugRandomizedHr">Randomized HR</string>
+       
+    <!--  Zone Notification setting values -->
+    <string id="zoneNotificationPrompt">Generates a notification when your heart rate zone changes.</string>
+    <string id="zoneNotificationsOff">Off</string>
+    <string id="zoneNotificationsVibrate">Vibrate</string>
+    <string id="zoneNotificationsTone">Tone</string>
+    <string id="zoneNotificationsBoth">Both</string>
+    
+    <!--  HR Display Defaults -->
+    <string id="defaultHr">--</string>
+    <string id="defaultMhr">--</string>
+    <string id="defaultZoneValue">--</string>
+    <string id="defaultZoneDescription">Waiting</string>
+    
+    <!--  Zone Names -->
+    <string id="zoneRest">Rest</string>
+    <string id="zoneRecovery">Recovery</string>
+    <string id="zoneEndurance">Endurance</string>
+    <string id="zoneAerobic">Aerobic</string>
+    <string id="zoneThreshold">Threshold</string>
+    <string id="zoneAnaerobic">Anaerobic</string>   
 </strings>

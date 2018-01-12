@@ -7,7 +7,11 @@ class reflectHrDelegate extends Ui.BehaviorDelegate {
     }
 
     function onMenu() {
-        Ui.pushView(new Rez.Menus.menuMain(), new reflectHrMenuMainDelegate(), Ui.SLIDE_UP);
+    	var view = (reflectHrRuntime has :Debug) 
+    		? new Rez.Menus.menuMainWithDebug()
+    		: new Rez.Menus.menuMain();
+    		
+        Ui.pushView(view, new reflectHrMenuMainDelegate(), Ui.SLIDE_UP);
         return true;
     }
 }

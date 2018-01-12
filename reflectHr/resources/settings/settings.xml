@@ -1,0 +1,10 @@
+<settings>
+    <setting propertyKey="@Properties.zoneNotification" title="@Strings.zoneNotificationTitle" prompt="@Strings.zoneNotificationPrompt">
+        <settingConfig type="list" required="true">
+            <listEntry value="0">@Strings.zoneNotificationsOff</listEntry>
+            <listEntry value="1">@Strings.zoneNotificationsVibrate</listEntry>
+            <listEntry value="2">@Strings.zoneNotificationsTone</listEntry>
+            <listEntry value="3">@Strings.zoneNotificationsBoth</listEntry>
+        </settingConfig>
+    </setting>
+</settings>

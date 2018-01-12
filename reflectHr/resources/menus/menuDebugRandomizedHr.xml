@@ -1,0 +1,4 @@
+<menu id="menuDebugRandomizedHr" title="@Strings.menuDebugTitle">
+    <menu-item id="debugRandomizedHrEnabled" label="Enabled" />
+    <menu-item id="debugRandomizedHrDisabled" label="Disabled" />
+</menu>
