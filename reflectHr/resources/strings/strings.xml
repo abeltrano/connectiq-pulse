@@ -1,0 +1,9 @@
+<strings>    
+    <!--  Zone Names -->
+    <string id="zoneRest">Rest</string>
+    <string id="zoneRecovery">Recovery</string>
+    <string id="zoneEndurance">Endurance</string>
+    <string id="zoneAerobic">Aerobic</string>
+    <string id="zoneThreshold">Threshold</string>
+    <string id="zoneAnaerobic">Anaerobic</string>   
+</strings>

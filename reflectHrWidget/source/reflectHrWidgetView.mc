@@ -5,6 +5,7 @@ using Toybox.Timer;
 using Toybox.Math;
 using Toybox.Graphics;
 using Toybox.Application;
+using reflectHr;
 
 enum {
 	ZoneNotificationsOff = 0,
@@ -49,7 +50,7 @@ class reflectHrWidgetView extends Ui.View {
         
         self.hrTimer = new Timer.Timer();
         self.scTimer = new Timer.Timer();
-        self.hrZones = new reflectHrZoneInfo();
+        self.hrZones = new reflectHr.HrZoneInfo();
 			
         Sensor.setEnabledSensors([Sensor.SENSOR_HEARTRATE]);
         Sensor.enableSensorEvents(method(:onSensor));

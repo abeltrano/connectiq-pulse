@@ -1,6 +1,8 @@
 using Toybox.UserProfile;
 
-class reflectHrZoneInfo {
+module reflectHr {
+
+class HrZoneInfo {
 
 	public var Properties = [ 
 		{ :color => 0x55AA55, :description => Rez.Strings.zoneRest },
@@ -37,3 +39,5 @@ class reflectHrZoneInfo {
 		return self.Properties[self.count()-1][:bound];
 	}
 }
+
+} /* module reflectHr */
