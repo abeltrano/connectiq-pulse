@@ -1,6 +1,6 @@
 using Toybox.Application as App;
 
-class reflectHrApp extends App.AppBase {
+class reflectHrWidgetApp extends App.AppBase {
 
     function initialize() {
         AppBase.initialize();
@@ -16,6 +16,6 @@ class reflectHrApp extends App.AppBase {
 
     // Return the initial view of your application here
     function getInitialView() {
-        return [new reflectHrView(), new reflectHrDelegate()];
+        return [new reflectHrWidgetView(), new reflectHrDelegate()];
     }
 }

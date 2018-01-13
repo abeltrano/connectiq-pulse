@@ -13,7 +13,7 @@ enum {
 	ZoneNotificationsBoth = 3
 }
 
-class reflectHrView extends Ui.View {
+class reflectHrWidgetView extends Ui.View {
 	
 	enum { 
 		Current = 0, 
