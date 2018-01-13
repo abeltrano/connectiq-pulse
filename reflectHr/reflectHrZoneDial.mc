@@ -1,6 +1,8 @@
 using Toybox.WatchUi as Ui;
 
-class reflectHrZoneDial extends Ui.Drawable {
+module reflectHr {
+
+class HrZoneDial extends Ui.Drawable {
 
 	// Heart rate zone contants.
 	const HrZoneArcWidth   = 5;	
@@ -52,3 +54,5 @@ class reflectHrZoneDial extends Ui.Drawable {
     	}
     }
 }
+
+} /* module reflectHr */
