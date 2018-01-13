@@ -6,4 +6,5 @@
     <label id="hrLabelZoneText" text="Zone" x="40" y="110" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" />
     <label id="hrLabelZoneValue" text="@Strings.defaultZoneValue" x="40" y="135" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" />
     <label id="hrLabelZoneDescription" text="@Strings.defaultZoneDescription" x="center" y="190" font="Gfx.FONT_SYSTEM_XTINY" justification="Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER" color="Gfx.COLOR_DK_GRAY" />
+	<drawable id="hrZoneDial" class="reflectHrZoneDial" />
 </layout>

@@ -14,6 +14,7 @@ class reflectHrMenuDebugRandomizedHrDelegate extends Ui.MenuInputDelegate {
     	case :debugRandomizedHrEnabled:
     		setting = true;
     		break;
+    		
 		case :debugRandomizedHrDisabled:
 			setting = false;
 			break;

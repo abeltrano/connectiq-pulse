@@ -4,7 +4,6 @@ using Toybox.Attention;
 using Toybox.Timer;
 using Toybox.Math;
 using Toybox.Graphics;
-using Toybox.UserProfile;
 using Toybox.Application;
 
 enum {
@@ -15,40 +14,25 @@ enum {
 }
 
 class reflectHrView extends Ui.View {
-	// Minimum heart rate interval.
-	const MaxHrZoneCount  = 5;
-	const MinHrIntervalMs = 1000;
-	const OneMinuteInMs   = 1000 * 60;
-	
-	// Heart rate zone contants.
-	const HrZoneArcWidth   = 5;	
-    const HrZoneSeparation = 5;
-	const HrZoneStart = 90 - (HrZoneSeparation / 2);
-	const HrZoneVibeMs     = 250;
 	
 	enum { 
 		Current = 0, 
 		Last = 1 
 	}
 	
+	// Minimum heart rate interval.
+	const MaxHrZoneCount  = 5;
+	const MinHrIntervalMs = 1000;
+	const OneMinuteInMs   = 1000 * 60;
+	const HrZoneVibeMs    = 250;
+	
 	// Heart rate zone fixed information.
-	var hrZoneInfo = [ 
-		{ :color => 0x55AA55, :description => Rez.Strings.zoneRest },
-		{ :color => 0xFFFF00, :description => Rez.Strings.zoneRecovery },
-		{ :color => 0xFFAA00, :description => Rez.Strings.zoneEndurance },
-		{ :color => 0xFF5500, :description => Rez.Strings.zoneAerobic },
-		{ :color => 0xAA0055, :description => Rez.Strings.zoneThreshold },
-		{ :color => 0xAA0000, :description => Rez.Strings.zoneAnaerobic }
-	];
-
-	var hrZones; 
-	var hrZoneAmount;
+	var hrZones;
+	var hrZoneDial;
 	var hrZoneActive = -1;
 	var hrZoneIndex = 0;
 	var hrZoneIndexCount = MaxHrZoneCount;
 	
-	var hrMax;
-	var hrSport;
 	var hrLabel;
 	var hrLabelZoneValue;
 	var hrLabelZoneDescription;
@@ -57,19 +41,16 @@ class reflectHrView extends Ui.View {
 	var hrValue = [0,0];
 	var hrTimerInterval = MinHrIntervalMs;
 	var hrValueUpdateTime = 0;
-	var hrTimer = new Timer.Timer();
-	var scTimer = new Timer.Timer();
+	var hrTimer;
+	var scTimer;
 	
     function initialize() {
         View.initialize();
         
-        self.hrSport = UserProfile.getProfile().getCurrentSport();
-        self.hrZones = UserProfile.getHeartRateZones(self.hrSport);
-        self.hrZoneAmount = (360 / self.hrZones.size()) - HrZoneSeparation;
-        self.hrMax = self.hrZones[self.hrZones.size()-1];
-        
-        calculateHrZoneBounds();
-
+        self.hrTimer = new Timer.Timer();
+        self.scTimer = new Timer.Timer();
+        self.hrZones = new reflectHrZoneInfo();
+			
         Sensor.setEnabledSensors([Sensor.SENSOR_HEARTRATE]);
         Sensor.enableSensorEvents(method(:onSensor));
     }
@@ -80,13 +61,9 @@ class reflectHrView extends Ui.View {
         self.hrLabelMhrValue = View.findDrawableById("hrLabelMhrValue");
         self.hrLabelZoneValue = View.findDrawableById("hrLabelZoneValue");
         self.hrLabelZoneDescription = View.findDrawableById("hrLabelZoneDescription");
+        self.hrZoneDial = View.findDrawableById("hrZoneDial");
+        self.hrZoneDial.setHrZones(self.hrZones);
         onUpdate(dc);
-    }
-
-    function onShow() {
-    }
-    
-    function onHide() {
     }
     
     function updateHrDefaults() {
@@ -99,52 +76,18 @@ class reflectHrView extends Ui.View {
     }
 
     function onUpdate(dc) {
+    	self.hrZoneDial.setHrData(self.hrValue[Current], self.hrZoneActive);
     	View.onUpdate(dc);
-        drawHrZoneArcs(dc);
     }
     
     function getHrZone(hr) {
-    	for (var zone = 0; zone < self.hrZones.size() - 1; zone++) {
-    		if (hr < self.hrZones[zone]) {
+    	for (var zone = 0; zone < self.hrZones.count() - 1; zone++) {
+    		if (hr <= self.hrZones.Properties[zone][:bound]) {
     			return zone;
     		}
     	}
     	
-    	return self.hrZones.size() - 1;
-    }
-    
-    function getHrZoneBounds(zone) {
-    	var zoneStart = HrZoneStart - (zone * (self.hrZoneAmount + HrZoneSeparation));
-    	var zoneEnd   = zoneStart - self.hrZoneAmount;
-    	
-    	return { :start => zoneStart, :end => zoneEnd };
-    }
-    
-    function calculateHrZoneBounds() {
-    	for (var zone = 0; zone < self.hrZoneInfo.size(); zone++) {
-    		var zoneBounds = getHrZoneBounds(zone);
-    		self.hrZoneInfo[zone][:arcStart] = zoneBounds[:start];
-    		self.hrZoneInfo[zone][:arcEnd]   = zoneBounds[:end];
-    	}
-    }
-    
-    function drawHrZoneArcs(dc) {
-    	// Don't draw any zones if no value is set.
-    	var hr = self.hrValue[Current];
-    	if (hr == null || hr <= 0) {
-    		return;
-    	}
-    	
-    	var x = dc.getWidth() / 2;
-        var y = dc.getHeight() / 2;
-        var r = x - 5;
-
-        dc.setPenWidth(HrZoneArcWidth);
-        
-    	for (var zone = 0; zone <= self.hrZoneActive; zone++) {
-	        dc.setColor(self.hrZoneInfo[zone][:color], Graphics.COLOR_TRANSPARENT);
-	        dc.drawArc(x, y, r, Graphics.ARC_CLOCKWISE, self.hrZoneInfo[zone][:arcStart], self.hrZoneInfo[zone][:arcEnd]);
-    	}
+    	return self.hrZones.count() - 1;
     }
 
     function getRandomizedHr() {
@@ -153,10 +96,10 @@ class reflectHrView extends Ui.View {
 		}
 		else {
 			self.hrZoneIndexCount = MaxHrZoneCount;
-			self.hrZoneIndex = Math.rand() % self.hrZones.size();
+			self.hrZoneIndex = Math.rand() % self.hrZones.count();
 		}
 		
-		return self.hrZones[self.hrZoneIndex];
+		return self.hrZones.Properties[self.hrZoneIndex][:bound];
     }
     
     function onSensor(sensorInfo) {   	
@@ -171,7 +114,7 @@ class reflectHrView extends Ui.View {
 		if (self.hrValue[Current] != sensorInfo.heartRate) {
 			self.hrValue[Last] = self.hrValue[Current];
 			self.hrValue[Current] = sensorInfo.heartRate;
-				
+			
 			// If the new rate is 0, stop the timer.
 			if (self.hrValue[Current] <= 0) {
 				self.hrTimer.stop();
@@ -229,8 +172,8 @@ class reflectHrView extends Ui.View {
 	}
 	
 	function onHrZoneActiveChanged(zoneValue, zoneValueLast) {
-		var zone = self.hrZoneInfo[zoneValue];
-		var zoneMhr = self.hrValue[Current] * 100 / self.hrMax;
+		var zone = self.hrZones.Properties[zoneValue];
+		var zoneMhr = self.hrValue[Current] * 100 / self.hrZones.maxHr();
 		
 		self.hrLabelZoneValue.setColor(zone[:color]);
 		self.hrLabelZoneValue.setText(zoneValue.toString());
@@ -249,7 +192,7 @@ class reflectHrView extends Ui.View {
 		
 		// Set vibration if enabled and available.
 		if (zoneVibrate && Attention has :vibrate) {
-			var vibeDutyCycle  = (zoneValue+1) * 100 / self.hrZones.size();
+			var vibeDutyCycle  = (zoneValue+1) * 100 / self.hrZones.count();
 			var vibeProfileOn  = new Attention.VibeProfile(vibeDutyCycle, self.HrZoneVibeMs);
 			var vibeProfileOff = new Attention.VibeProfile(0, self.HrZoneVibeMs / 2);			
 			Attention.vibrate([vibeProfileOn, vibeProfileOff, vibeProfileOn]);
