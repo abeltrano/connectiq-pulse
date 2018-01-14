@@ -14,11 +14,5 @@
     <string id="zoneNotificationsOff">Off</string>
     <string id="zoneNotificationsVibrate">Vibrate</string>
     <string id="zoneNotificationsTone">Tone</string>
-    <string id="zoneNotificationsBoth">Both</string>
-    
-    <!--  HR Display Defaults -->
-    <string id="defaultHr">--</string>
-    <string id="defaultMhr">--</string>
-    <string id="defaultZoneValue">--</string>
-    <string id="defaultZoneDescription">Waiting</string> 
+    <string id="zoneNotificationsBoth">Both</string> 
 </strings>

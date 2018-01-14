@@ -57,7 +57,7 @@ class reflectHrWidgetView extends Ui.View {
     }
 
     function onLayout(dc) {
-        setLayout(Rez.Layouts.MainLayout(dc));
+        setLayout(reflectHr.Rez.Layouts.MainLayout(dc));
         self.hrLabel = View.findDrawableById("hrLabel");
         self.hrLabelMhrValue = View.findDrawableById("hrLabelMhrValue");
         self.hrLabelZoneValue = View.findDrawableById("hrLabelZoneValue");
@@ -68,10 +68,10 @@ class reflectHrWidgetView extends Ui.View {
     }
     
     function updateHrDefaults() {
-        self.hrLabel.setText(Rez.Strings.defaultHr);
-        self.hrLabelMhrValue.setText(Rez.Strings.defaultMhr);
-        self.hrLabelZoneValue.setText(Rez.Strings.defaultZoneValue);
-        self.hrLabelZoneDescription.setText(Rez.Strings.defaultZoneDescription);
+        self.hrLabel.setText(reflectHr.Rez.Strings.defaultHr);
+        self.hrLabelMhrValue.setText(reflectHr.Rez.Strings.defaultMhr);
+        self.hrLabelZoneValue.setText(reflectHr.Rez.Strings.defaultZoneValue);
+        self.hrLabelZoneDescription.setText(reflectHr.Rez.Strings.defaultZoneDescription);
         
    		Ui.requestUpdate();
     }

@@ -6,4 +6,14 @@
     <string id="zoneAerobic">Aerobic</string>
     <string id="zoneThreshold">Threshold</string>
     <string id="zoneAnaerobic">Anaerobic</string>   
+
+    <!--  HR Display Defaults -->
+    <string id="defaultHr">--</string>
+    <string id="defaultMhr">--</string>
+    <string id="defaultZoneValue">--</string>
+    <string id="defaultZoneDescription">Waiting</string>
+    
+    <!--  Generic names -->
+    <string id="zone">Zone</string>
+    <string id="mhr">MHR</string>
 </strings>
