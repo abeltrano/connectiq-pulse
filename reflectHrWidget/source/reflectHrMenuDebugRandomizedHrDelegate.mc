@@ -1,5 +1,6 @@
 using Toybox.WatchUi as Ui;
 using Toybox.System as Sys;
+using reflectHr.Runtime;
 
 class reflectHrMenuDebugRandomizedHrDelegate extends Ui.MenuInputDelegate {
 
@@ -23,8 +24,8 @@ class reflectHrMenuDebugRandomizedHrDelegate extends Ui.MenuInputDelegate {
 			break;
 		}
 		
-    	if (reflectHrRuntime has :Debug) {
-			reflectHrRuntime.Debug.IsHrRandomizationEnabled = setting;
+    	if (Runtime has :Debug) {
+			Runtime.Debug.setHrRandomizationEnabled(setting);
 		}
     }
     

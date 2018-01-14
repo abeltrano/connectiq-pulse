@@ -12,6 +12,10 @@ class reflectHrWidgetView extends reflectHr.reflectHrView {
     }
     
     function onSensor(sensorInfo) {
-    	onHrUpdated(sensorInfo.heartRate);
+    	var hrValue = Runtime.IsHrRandomizationEnabled()
+    		? getRandomizedHr()
+    		: sensorInfo.heartRate;
+ 
+    	onHrUpdated(hrValue );
 	}
 }

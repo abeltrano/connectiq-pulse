@@ -1,4 +1,5 @@
 using Toybox.WatchUi as Ui;
+using reflectHr.Runtime;
 
 class reflectHrDelegate extends Ui.BehaviorDelegate {
 
@@ -7,7 +8,7 @@ class reflectHrDelegate extends Ui.BehaviorDelegate {
     }
 
     function onMenu() {
-    	var view = (reflectHrRuntime has :Debug) 
+    	var view = (Runtime has :Debug) 
     		? new Rez.Menus.menuMainWithDebug()
     		: new Rez.Menus.menuMain();
     		

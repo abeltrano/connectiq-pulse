@@ -106,10 +106,8 @@ class reflectHrView extends Ui.View {
     public function onHrUpdated(hrValue) {   	
     	// Check if heart rate value is valid.
     	if (hrValue == null) {
-    		hrValue = reflectHrRuntime.IsHrRandomizationEnabled()
-    			? getRandomizedHr() 
-    			: 0;
-    	}
+    		hrValue = 0;
+		}
     	
 		// Check if heart rate changed.
 		if (self.hrValue[Current] != hrValue) {
