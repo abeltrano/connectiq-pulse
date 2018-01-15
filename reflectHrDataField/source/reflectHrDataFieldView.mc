@@ -1,5 +1,4 @@
 using Toybox.WatchUi as Ui;
-using Toybox.Graphics as Gfx;
 using reflectHr;
 
 class reflectHrDataFieldView extends Ui.DataField {
