@@ -9,18 +9,17 @@ class reflectHrDataFieldView extends Ui.DataField {
 
     function initialize() {
         DataField.initialize();
-        self.view = new reflectHr.reflectHrView();
     }
 
     function onLayout(dc) {
-        self.view.onLayout(dc);
+		self.view = new reflectHr.reflectHrView(false);
+		self.view.onLayout(dc);
+
         return true;
     }
 
     function compute(info) {
-        if (info has :currentHeartRate) {
-        	self.hrValue = info.currentHeartRate;
-    	}
+		self.hrValue = info.currentHeartRate;
     }
 
     function onUpdate(dc) {

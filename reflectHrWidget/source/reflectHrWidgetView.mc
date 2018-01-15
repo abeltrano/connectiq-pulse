@@ -5,17 +5,13 @@ using reflectHr;
 class reflectHrWidgetView extends reflectHr.reflectHrView {
 	
     function initialize() {
-        reflectHr.reflectHrView.initialize();
+        reflectHr.reflectHrView.initialize(true);
 			
         Sensor.setEnabledSensors([Sensor.SENSOR_HEARTRATE]);
         Sensor.enableSensorEvents(method(:onSensor));
     }
     
     function onSensor(sensorInfo) {
-    	var hrValue = Runtime.IsHrRandomizationEnabled()
-    		? getRandomizedHr()
-    		: sensorInfo.heartRate;
- 
-    	onHrUpdated(hrValue );
+    	onHrUpdated(sensorInfo.heartRate);
 	}
 }

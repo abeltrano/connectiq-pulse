@@ -43,16 +43,22 @@ class reflectHrView extends Ui.View {
 	var hrLabelMhrValue;
 	
 	var hrValue = [0,0];
-	var hrTimerInterval = MinHrIntervalMs;
 	var hrValueUpdateTime = 0;
+
+	// Heart rate "pulsing" feature.
+	var hrPulse = false;
+	var hrTimerInterval = MinHrIntervalMs;
 	var hrTimer;
 	var scTimer;
 	
-    function initialize() {
+    function initialize(hrPulse) {
         View.initialize();
         
-        self.hrTimer = new Timer.Timer();
-        self.scTimer = new Timer.Timer();
+        self.hrPulse = hrPulse;
+        if (hrPulse) {
+        	self.hrTimer = new Timer.Timer();
+        	self.scTimer = new Timer.Timer();
+    	}
         self.hrZones = new reflectHr.HrZoneInfo();
     }
 
@@ -102,11 +108,13 @@ class reflectHrView extends Ui.View {
 		
 		return self.hrZones.Properties[self.hrZoneIndex][:bound];
     }
-    
-    public function onHrUpdated(hrValue) {   	
+
+    public function onHrUpdated(hrValue) {    	
     	// Check if heart rate value is valid.
-    	if (hrValue == null) {
-    		hrValue = 0;
+    	if (Runtime.IsHrRandomizationEnabled()) {
+    		hrValue = getRandomizedHr();
+		} else if (hrValue == null) {
+			hrValue = 0;
 		}
     	
 		// Check if heart rate changed.
@@ -114,8 +122,12 @@ class reflectHrView extends Ui.View {
 			self.hrValue[Last] = self.hrValue[Current];
 			self.hrValue[Current] = hrValue;
 			
+			// If pulsing is disabled, update immediately.
+			if (!self.hrPulse) {
+				updateHr();
+			}
 			// If the new rate is 0, stop the timer.
-			if (self.hrValue[Current] <= 0) {
+			else if (self.hrValue[Current] <= 0) {
 				self.hrTimer.stop();
 				self.scTimer.stop();
 				self.hrZoneActive = -1;
@@ -123,7 +135,9 @@ class reflectHrView extends Ui.View {
 			// If the previous rate was 0, restart the timer.
 			} else if (self.hrValue[Last] <= 0) {
 				updateHr();
-				self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval / 3 * 2 , false);
+				if (self.hrPulse) {
+					self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval / 3 * 2 , false);
+				}
 			// Otherwise update hr value.
 			} else {
 				var now  = Sys.getTimer();

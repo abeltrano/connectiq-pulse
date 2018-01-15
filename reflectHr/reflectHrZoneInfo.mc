@@ -35,7 +35,7 @@ class HrZoneInfo {
 		return self.Properties.size();
 	}
 	
-		function maxHr() {
+	function maxHr() {
 		return self.Properties[self.count()-1][:bound];
 	}
 }
