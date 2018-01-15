@@ -1,3 +1,11 @@
 <strings>
     <string id="AppName">ReflectHR</string>
+       
+    <!--  Zone Notification setting values -->
+	<string id="zoneNotificationTitle">Zone Notifications</string>
+    <string id="zoneNotificationPrompt">Generates a notification when your heart rate zone changes.</string>
+    <string id="zoneNotificationsOff">Off</string>
+    <string id="zoneNotificationsVibrate">Vibrate</string>
+    <string id="zoneNotificationsTone">Tone</string>
+    <string id="zoneNotificationsBoth">Both</string> 
 </strings>

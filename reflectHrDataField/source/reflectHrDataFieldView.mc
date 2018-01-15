@@ -9,12 +9,11 @@ class reflectHrDataFieldView extends Ui.DataField {
 
     function initialize() {
         DataField.initialize();
+		self.view = new reflectHr.reflectHrView(false);
     }
 
     function onLayout(dc) {
-		self.view = new reflectHr.reflectHrView(false);
 		self.view.onLayout(dc);
-
         return true;
     }
 
@@ -25,6 +24,5 @@ class reflectHrDataFieldView extends Ui.DataField {
     function onUpdate(dc) {
     	self.view.onHrUpdated(self.hrValue);
     	self.view.onUpdate(dc);
-        View.onUpdate(dc);
     }
 }
