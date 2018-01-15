@@ -29,6 +29,10 @@ class reflectHrView extends Ui.View {
 	const MinHrIntervalMs = 1000;
 	const OneMinuteInMs   = 1000 * 60;
 	const HrZoneVibeMs    = 250;
+	const HrPulseFont 	  = [ 
+		Graphics.FONT_SYSTEM_NUMBER_THAI_HOT, 
+		Graphics.FONT_SYSTEM_NUMBER_HOT 
+	];
 	
 	// Heart rate zone fixed information.
 	var hrZones;
@@ -47,9 +51,11 @@ class reflectHrView extends Ui.View {
 
 	// Heart rate "pulsing" feature.
 	var hrPulse = false;
+	var hrPulseFontIndex = 0;
 	var hrTimerInterval = MinHrIntervalMs;
 	var hrTimer;
 	var scTimer;
+	
 	
     function initialize(hrPulse) {
         View.initialize();
@@ -124,6 +130,9 @@ class reflectHrView extends Ui.View {
 			
 			// If pulsing is disabled, update immediately.
 			if (!self.hrPulse) {
+				Sys.println("index=" + self.hrPulseFontIndex);
+				self.hrLabel.setFont(self.HrPulseFont[self.hrPulseFontIndex]);
+				self.hrPulseFontIndex = (self.hrPulseFontIndex + 1) % 2;
 				updateHr();
 			}
 			// If the new rate is 0, stop the timer.
@@ -152,13 +161,13 @@ class reflectHrView extends Ui.View {
     }
     
     function onHrTimerExpired() {
-		self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_THAI_HOT);
+		self.hrLabel.setFont(self.HrPulseFont[0]);
 		self.hrTimer.start(method(:onHrTimerExpiredShort), self.hrTimerInterval / 3 * 2, false);
 		Ui.requestUpdate();
 	}
 	
 	function onHrTimerExpiredShort() {
-		self.hrLabel.setFont(Graphics.FONT_SYSTEM_NUMBER_HOT);
+		self.hrLabel.setFont(self.HrPulseFont[1]);
 		self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval / 3 * 1, false);
 		Ui.requestUpdate();
 	}
@@ -172,15 +181,17 @@ class reflectHrView extends Ui.View {
 		var hrZoneActive = getHrZone(hrValue);
 		var hrZoneActiveLast = self.hrZoneActive;
 		
-		self.hrValueUpdateTime = Sys.getTimer();
-		self.hrTimerInterval = OneMinuteInMs / hrValue;
-		self.hrLabel.setText(hrValue.format("%d"));
+		if (self.hrPulse) {
+			self.hrValueUpdateTime = Sys.getTimer();
+			self.hrTimerInterval = OneMinuteInMs / hrValue;
+		}
 		
 		if (self.hrZoneActive != hrZoneActive) {
 			self.hrZoneActive = hrZoneActive;
 			onHrZoneActiveChanged(hrZoneActive, hrZoneActiveLast);
 		}
-			   	
+			
+		self.hrLabel.setText(hrValue.format("%d"));   	
 	   	Ui.requestUpdate();
 	}
 	
