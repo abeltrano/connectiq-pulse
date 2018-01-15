@@ -21,11 +21,11 @@ class reflectHrView extends Ui.View {
 	
 	enum { 
 		Current = 0, 
-		Last = 1 
+		Last = 1,
+		Random
 	}
 	
 	// Minimum heart rate interval.
-	const MaxHrZoneCount  = 5;
 	const MinHrIntervalMs = 1000;
 	const OneMinuteInMs   = 1000 * 60;
 	const HrZoneVibeMs    = 250;
@@ -38,16 +38,16 @@ class reflectHrView extends Ui.View {
 	var hrZones;
 	var hrZoneDial;
 	var hrZoneActive = -1;
-	var hrZoneIndex = 0;
-	var hrZoneIndexCount = MaxHrZoneCount;
 	
 	var hrLabel;
 	var hrLabelZoneValue;
 	var hrLabelZoneDescription;
 	var hrLabelMhrValue;
 	
-	var hrValue = [0,0];
+	var hrValue = [0,0,0];
 	var hrValueUpdateTime = 0;
+	var hrValueRandomizedCount = 0;
+	var hrValueRandomizedCountMax;
 
 	// Heart rate "pulsing" feature.
 	var hrPulse = false;
@@ -56,9 +56,9 @@ class reflectHrView extends Ui.View {
 	var hrTimer;
 	var scTimer;
 	
-	
     function initialize(hrPulse) {
         View.initialize();
+        Math.srand(Sys.getTimer());
         
         self.hrPulse = hrPulse;
         if (hrPulse) {
@@ -81,38 +81,31 @@ class reflectHrView extends Ui.View {
     
     function updateHrDefaults() {
         self.hrLabel.setText(reflectHr.Rez.Strings.defaultHr);
+        self.hrLabelMhrValue.setColor(Graphics.COLOR_DK_GRAY);
         self.hrLabelMhrValue.setText(reflectHr.Rez.Strings.defaultMhr);
+        self.hrLabelZoneValue.setColor(Graphics.COLOR_DK_GRAY);
         self.hrLabelZoneValue.setText(reflectHr.Rez.Strings.defaultZoneValue);
         self.hrLabelZoneDescription.setText(reflectHr.Rez.Strings.defaultZoneDescription);
-        
-   		Ui.requestUpdate();
     }
 
     function onUpdate(dc) {
     	self.hrZoneDial.setHrData(self.hrValue[Current], self.hrZoneActive);
     	View.onUpdate(dc);
     }
-    
-    function getHrZone(hr) {
-    	for (var zone = 0; zone < self.hrZones.count() - 1; zone++) {
-    		if (hr <= self.hrZones.Properties[zone][:bound]) {
-    			return zone;
-    		}
-    	}
-    	
-    	return self.hrZones.count() - 1;
-    }
 
-    function getRandomizedHr() {
-		if (self.hrZoneIndexCount > 0) {
-			self.hrZoneIndexCount--;
-		}
-		else {
-			self.hrZoneIndexCount = MaxHrZoneCount;
-			self.hrZoneIndex = Math.rand() % self.hrZones.count();
+    function getRandomizedHr() {  	    	
+    	if (self.hrValueRandomizedCount == 0) {
+    		var randomValue = Math.rand();
+    		var randomZone = randomValue % (self.hrZones.count() - 1);
+    		var randomBounds = [self.hrZones.getZoneBound(randomZone)+1, self.hrZones.getZoneBound(randomZone+1)];
+    		self.hrValueRandomizedCountMax = 1 + (randomValue % 10); 
+    		self.hrValueRandomizedCount = self.hrValueRandomizedCountMax;
+    		self.hrValue[Random] = randomBounds[0] + randomValue % (randomBounds[1] - randomBounds[0]);
+		} else {
+			self.hrValueRandomizedCount--;
 		}
 		
-		return self.hrZones.Properties[self.hrZoneIndex][:bound];
+    	return self.hrValue[Random];
     }
 
     public function onHrUpdated(hrValue) {    	
@@ -122,41 +115,40 @@ class reflectHrView extends Ui.View {
 		} else if (hrValue == null) {
 			hrValue = 0;
 		}
-    	
+
+		var updateHrPending = !self.hrPulse;
+		
 		// Check if heart rate changed.
 		if (self.hrValue[Current] != hrValue) {
 			self.hrValue[Last] = self.hrValue[Current];
 			self.hrValue[Current] = hrValue;
 			
-			// If pulsing is disabled, update immediately.
-			if (!self.hrPulse) {
-				Sys.println("index=" + self.hrPulseFontIndex);
-				self.hrLabel.setFont(self.HrPulseFont[self.hrPulseFontIndex]);
-				self.hrPulseFontIndex = (self.hrPulseFontIndex + 1) % 2;
-				updateHr();
-			}
-			// If the new rate is 0, stop the timer.
-			else if (self.hrValue[Current] <= 0) {
-				self.hrTimer.stop();
-				self.scTimer.stop();
-				self.hrZoneActive = -1;
-				updateHrDefaults();
-			// If the previous rate was 0, restart the timer.
-			} else if (self.hrValue[Last] <= 0) {
-				updateHr();
-				if (self.hrPulse) {
+			if (self.hrPulse) {			
+				// If the new rate is 0, stop the timer.
+				if (self.hrValue[Current] <= 0) {
+					self.hrTimer.stop();
+					self.scTimer.stop();
+					self.hrZoneActive = -1;
+					updateHrDefaults();
+				// If the previous rate was 0, restart the timer.
+				} else if (self.hrValue[Last] <= 0) {
+					updateHrPending = true;
 					self.hrTimer.start(method(:onHrTimerExpired), self.hrTimerInterval / 3 * 2 , false);
-				}
-			// Otherwise update hr value.
-			} else {
-				var now  = Sys.getTimer();
-				var next = self.hrValueUpdateTime + 1000;
-				if (now > next) {
-					updateHr();
+				// Otherwise update hr value.
 				} else {
-					scTimer.start(method(:onScTimerExpired), next - now, false);
+					var now  = Sys.getTimer();
+					var next = self.hrValueUpdateTime + 1000;
+					if (now > next) {
+						updateHrPending = true;
+					} else {
+						scTimer.start(method(:onScTimerExpired), next - now, false);
+					}
 				}
 			}
+		}
+		
+		if (updateHrPending) {
+			updateHr();		
 		}
     }
     
@@ -178,31 +170,35 @@ class reflectHrView extends Ui.View {
     
 	function updateHr() {
 		var hrValue = self.hrValue[Current];
-		var hrZoneActive = getHrZone(hrValue);
+		var hrZoneActive = self.hrZones.getZone(hrValue);
 		var hrZoneActiveLast = self.hrZoneActive;
+		var zoneMhr = hrValue * 100 / self.hrZones.maxHr();
 		
 		if (self.hrPulse) {
 			self.hrValueUpdateTime = Sys.getTimer();
-			self.hrTimerInterval = OneMinuteInMs / hrValue;
+			self.hrTimerInterval = OneMinuteInMs / max(hrValue, 1);
+		} else {
+			self.hrLabel.setFont(self.HrPulseFont[self.hrPulseFontIndex]);
+			self.hrPulseFontIndex = (self.hrPulseFontIndex + 1) % 2;
 		}
-		
+
 		if (self.hrZoneActive != hrZoneActive) {
 			self.hrZoneActive = hrZoneActive;
 			onHrZoneActiveChanged(hrZoneActive, hrZoneActiveLast);
 		}
 			
-		self.hrLabel.setText(hrValue.format("%d"));   	
+		self.hrLabel.setText(hrValue.format("%d"));
+		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%");
+		
 	   	Ui.requestUpdate();
 	}
 	
 	function onHrZoneActiveChanged(zoneValue, zoneValueLast) {
 		var zone = self.hrZones.Properties[zoneValue];
-		var zoneMhr = self.hrValue[Current] * 100 / self.hrZones.maxHr();
-		
+
+		self.hrLabelMhrValue.setColor(zone[:color]); 
 		self.hrLabelZoneValue.setColor(zone[:color]);
 		self.hrLabelZoneValue.setText(zoneValue.toString());
-		self.hrLabelMhrValue.setColor(zone[:color]);
-		self.hrLabelMhrValue.setText(zoneMhr.format("%d") + "%"); 
 		self.hrLabelZoneDescription.setText(zone[:description]);
 		
 		var zoneNotificationSetting = Application.Properties.getValue("zoneNotification");

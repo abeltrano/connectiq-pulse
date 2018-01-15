@@ -24,6 +24,20 @@ class HrZoneInfo {
 		setZoneBounds();
 	}
 	
+	function getZone(hrValue) {
+    	for (var zone = 0; zone < count() - 1; zone++) {
+    		if (hrValue <= self.Properties[zone][:bound]) {
+    			return zone;
+    		}
+    	}
+    	
+    	return count() - 1;
+	}
+	
+	function getZoneBound(zone) {
+		return self.Properties[zone][:bound];
+	}
+	
 	function setZoneBounds() {
         var bounds = UserProfile.getHeartRateZones(self.sport);
         for (var zone = 0; zone < bounds.size(); zone++) {

@@ -4,6 +4,7 @@
     <!--  Main menu -->
     <string id="menuMainTitle">Options</string>
     <string id="menuDebugTitle">Debugging</string>
+    <string id="menuRandomizedHrTitle">Randomized HR</string>
     <string id="zoneNotificationTitle">Zone Notifications</string>
         
     <!--  Debugging menu -->

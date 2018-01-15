@@ -6,7 +6,7 @@ module Runtime {
 	(:debugOnly)
 	module Debug {
 		var IsDebugEnabled = true;
-		var IsHrRandomizationEnabled = false;
+		var IsHrRandomizationEnabled = true;
 	}
 	
 	function IsDebugBuild() {
