@@ -25,7 +25,7 @@ class reflectHrMenuDebugRandomizedHrDelegate extends Ui.MenuInputDelegate {
 		}
 		
     	if (Runtime has :Debug) {
-			Runtime.Debug.setHrRandomizationEnabled(setting);
+			Runtime.Debug.HrRandomizationEnabled = setting;
 		}
     }
     

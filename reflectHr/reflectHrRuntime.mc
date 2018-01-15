@@ -5,21 +5,15 @@ module Runtime {
 	
 	(:debugOnly)
 	module Debug {
-		var IsDebugEnabled = true;
-		var IsHrRandomizationEnabled = true;
+		var HrRandomizationEnabled = true;
 	}
 	
 	function IsDebugBuild() {
-		return (Runtime has :Debug) ? Debug.IsDebugEnabled : false;
+		return (Runtime has :Debug);
 	}
 	
 	function IsHrRandomizationEnabled() {
-		return (Runtime has :Debug) ? Debug.IsHrRandomizationEnabled : false;
-	}
-	
-	(:debugOnly)
-	function setHrRandomizationEnabled(isHrRandomizationEnabled) {
-		Debug.IsHrRandomizationEnabled = isHrRandomizationEnabled;
+		return IsDebugBuild() ? Debug.HrRandomizationEnabled : false;
 	}
 	
 } /* module Runtime */

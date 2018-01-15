@@ -86,6 +86,8 @@ class reflectHrView extends Ui.View {
         self.hrLabelZoneValue.setColor(Graphics.COLOR_DK_GRAY);
         self.hrLabelZoneValue.setText(reflectHr.Rez.Strings.defaultZoneValue);
         self.hrLabelZoneDescription.setText(reflectHr.Rez.Strings.defaultZoneDescription);
+		
+		Ui.requestUpdate();
     }
 
     function onUpdate(dc) {
@@ -123,7 +125,7 @@ class reflectHrView extends Ui.View {
 			self.hrValue[Last] = self.hrValue[Current];
 			self.hrValue[Current] = hrValue;
 			
-			if (self.hrPulse) {			
+			if (self.hrPulse) {
 				// If the new rate is 0, stop the timer.
 				if (self.hrValue[Current] <= 0) {
 					self.hrTimer.stop();
