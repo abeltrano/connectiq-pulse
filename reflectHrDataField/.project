@@ -14,4 +14,21 @@
 	<natures>
 		<nature>connectiq.projectNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>resources/drawables/drawables.xml</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/reflectHr/resources/drawables/drawables.xml</locationURI>
+		</link>
+		<link>
+			<name>resources-round-218x218/drawables/devil-red.png</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/reflectHr/resources-round-218x218/drawables/devil-red.png</locationURI>
+		</link>
+		<link>
+			<name>resources-round-218x218/drawables/drawables.xml</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/reflectHr/resources-round-218x218/drawables/drawables.xml</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

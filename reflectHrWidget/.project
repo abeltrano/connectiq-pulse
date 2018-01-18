@@ -14,4 +14,11 @@
 	<natures>
 		<nature>connectiq.projectNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>resources/drawables/drawables.xml</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/reflectHr/resources/drawables/drawables.xml</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
