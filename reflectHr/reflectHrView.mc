@@ -98,8 +98,8 @@ class reflectHrView extends Ui.View {
     function getRandomizedHr() {
         if (self.hrValueRandomizedCount == 0) {
             var randomValue = Math.rand();
-            var randomZone = randomValue % (self.hrZones.count() - 1);
-            var randomBounds = [self.hrZones.getZoneBound(randomZone)+1, self.hrZones.getZoneBound(randomZone+1)];
+            var randomZone = randomValue % self.hrZones.count();
+            var randomBounds = [self.hrZones.getZoneBound(randomZone-1)+1, self.hrZones.getZoneBound(randomZone)];
             self.hrValueRandomizedCountMax = 1 + (randomValue % 10);
             self.hrValueRandomizedCount = self.hrValueRandomizedCountMax;
             self.hrValue[Random] = randomBounds[0] + randomValue % (randomBounds[1] - randomBounds[0]);
