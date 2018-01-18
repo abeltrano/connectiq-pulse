@@ -22,7 +22,7 @@ class reflectHrView extends Ui.View {
     enum {
         Current = 0,
         Last = 1,
-        Random
+        Random = 2
     }
 
     // Minimum heart rate interval.
