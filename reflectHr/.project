@@ -14,16 +14,4 @@
 	<natures>
 		<nature>connectiq.barrelProjectNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>resources-round-218x218/drawables/drawables.xml</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/resources/drawables/drawables.xml</locationURI>
-		</link>
-		<link>
-			<name>resources-round-240x240/drawables/drawables.xml</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/resources/drawables/drawables.xml</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>
