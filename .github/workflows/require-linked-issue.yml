@@ -1,3 +1,4 @@
+# GitHub Actions workflow to ensure pull requests are linked to issues
 name: Require Linked Issue
 
 on:
